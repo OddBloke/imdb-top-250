@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 import requests
@@ -54,6 +55,7 @@ def _get_movie_dicts():
 
 
 def main():
+    os.remove('data.sqlite')
     session = _get_db_session()
     for movie_dict in _get_movie_dicts():
         movie = Movie(**movie_dict)
