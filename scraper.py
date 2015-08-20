@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 import requests
@@ -50,6 +51,7 @@ def _get_db_session():
 def _get_movie_dict(tr):
     ir = tr.find('span', {'name': 'ir'})
     title_a = tr.find('td', {'class': 'titleColumn'}).find('a')
+    logging.warning('Processing %s...', title_a.text)
     link = 'http://akas.imdb.com{}'.format(title_a['href'].split('?')[0])
     movie_response = requests.get(link)
     soup = BeautifulSoup(movie_response.content)
@@ -94,4 +96,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(format='%(asctime)s %(message)s')
     main()
