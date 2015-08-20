@@ -48,12 +48,12 @@ def _get_db_session():
     return sessionmaker(engine)()
 
 
-def _get_movie_dict(tr):
+def _get_movie_dict(session, tr):
     ir = tr.find('span', {'name': 'ir'})
     title_a = tr.find('td', {'class': 'titleColumn'}).find('a')
     logging.warning('Processing %s...', title_a.text)
     link = 'http://akas.imdb.com{}'.format(title_a['href'].split('?')[0])
-    movie_response = requests.get(link)
+    movie_response = session.get(link)
     soup = BeautifulSoup(movie_response.content)
     release_date_string = soup.find(
         id='overview-top').find('meta', itemprop='datePublished')['content']
@@ -76,11 +76,12 @@ def _get_movie_dict(tr):
 
 
 def _get_movie_dicts():
-    response = requests.get('http://akas.imdb.com/chart/top')
+    session = requests.session()
+    response = session.get('http://akas.imdb.com/chart/top')
     soup = BeautifulSoup(response.content)
     tbody = soup.find('tbody', {'class': 'lister-list'})
     for tr in tbody.findAll('tr'):
-        yield _get_movie_dict(tr)
+        yield _get_movie_dict(session, tr)
 
 
 def main():
