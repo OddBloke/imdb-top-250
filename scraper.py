@@ -33,16 +33,26 @@ def _get_db_session():
 def _get_movie_dict(tr):
     ir = tr.find('span', {'name': 'ir'})
     title_a = tr.find('td', {'class': 'titleColumn'}).find('a')
-    rd = tr.find('span', {'name': 'rd'})
-    release_date = datetime.strptime(rd['data-value'], '%Y-%m-%d').date()
+    link = 'http://akas.imdb.com{}'.format(title_a['href'].split('?')[0])
+    movie_response = requests.get(link)
+    soup = BeautifulSoup(movie_response.content)
+    release_date_string = soup.find(
+        id='overview-top').find('meta', itemprop='datePublished')['content']
+    date_templates = {
+        2: '%Y-%m-%d',
+        1: '%Y-%m',
+        0: '%Y',
+    }
+    date_template = date_templates[release_date_string.count('-')]
+    release_date = datetime.strptime(release_date_string, date_template).date()
     return {
         'name': title_a.text,
         'rating': ir['data-value'],
-        'rank': ir.text.strip('.'),
-        'link': 'http://akas.imdb.com{}'.format(title_a['href'].split('?')[0]),
-        'year': rd.text.strip('()'),
+        'rank': tr.find('span', {'name': 'rk'})['data-value'],
+        'link': link,
+        'year': release_date.year,
         'release_date': release_date,
-        'number_of_votes': tr.find('strong', {'name': 'nv'})['data-value'],
+        'number_of_votes': tr.find('span', {'name': 'nv'})['data-value'],
     }
 
 
