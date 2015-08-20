@@ -79,7 +79,6 @@ def _get_movie_dicts():
     tbody = soup.find('tbody', {'class': 'lister-list'})
     for tr in tbody.findAll('tr'):
         yield _get_movie_dict(tr)
-        return
 
 
 def main():
