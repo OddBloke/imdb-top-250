@@ -1,3 +1,7 @@
-This scraper works for the following url
+This scraper works on http://akas.imdb.com/chart/top
 
-http://akas.imdb.com/chart/top
+It includes three tables:
+
+* @data@ contains the most recent top 250 scraped,
+* @scraper_run@ maps from time of scraping to a run id,
+* @movie_rating@ is a list of all the rankings ever captured (with run ids)

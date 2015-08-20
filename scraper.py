@@ -1,20 +1,26 @@
-import os
 from datetime import datetime
 
 import requests
 from BeautifulSoup import BeautifulSoup
 from sqlalchemy import create_engine
-from sqlalchemy import Column, Date, Integer, Numeric, SmallInteger, String
+from sqlalchemy import (
+    Column, Date, DateTime, ForeignKey, Integer, Numeric, SmallInteger, String)
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker
 
 
 Base = declarative_base()
 
 
-class Movie(Base):
-    __tablename__ = 'data'
+class ScraperRun(Base):
+    __tablename__ = 'scraper_run'
 
+    run_id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime)
+    movies = relationship('MovieRating')
+
+
+class MovieMixin(object):
     name = Column(String)
     rating = Column(Numeric)
     rank = Column(SmallInteger)
@@ -22,6 +28,17 @@ class Movie(Base):
     year = Column(SmallInteger)
     release_date = Column(Date)
     number_of_votes = Column(Integer)
+
+
+class Movie(Base, MovieMixin):
+    __tablename__ = 'data'
+
+
+class MovieRating(Base, MovieMixin):
+    __tablename__ = 'movie_rating'
+
+    scraper_run = Column(Integer, ForeignKey('scraper_run.run_id'),
+                         nullable=False, primary_key=True)
 
 
 def _get_db_session():
@@ -62,14 +79,18 @@ def _get_movie_dicts():
     tbody = soup.find('tbody', {'class': 'lister-list'})
     for tr in tbody.findAll('tr'):
         yield _get_movie_dict(tr)
+        return
 
 
 def main():
-    os.remove('data.sqlite')
     session = _get_db_session()
+    session.query(Movie).delete()
+    scraper_run = ScraperRun(timestamp=datetime.now())
+    session.add(scraper_run)
+    session.commit()
     for movie_dict in _get_movie_dicts():
-        movie = Movie(**movie_dict)
-        session.add(movie)
+        session.add(Movie(**movie_dict))
+        session.add(MovieRating(scraper_run=scraper_run.run_id, **movie_dict))
     session.commit()
 
 
