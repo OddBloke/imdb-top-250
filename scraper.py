@@ -56,7 +56,8 @@ def _get_movie_dict(session, tr):
     movie_response = session.get(link)
     soup = BeautifulSoup(movie_response.content)
     release_date_string = soup.find(
-        id='overview-top').find('meta', itemprop='datePublished')['content']
+        id='title-overview-widget').find(
+            'meta', itemprop='datePublished')['content']
     date_templates = {
         2: '%Y-%m-%d',
         1: '%Y-%m',
